@@ -1,13 +1,48 @@
--- 注意：这个文件上传到 GitHub，文件名例如 gamepass.lua
+-- ==================== Gamepass 解锁脚本（监听传送版） ====================
 
--- ==================== Gamepass 解锁脚本 ====================
--- 此文件会被 queue_on_teleport 调用
+-- 你的 GitHub 链接
+local SCRIPT_URL = "https://raw.githubusercontent.com/QQ161475237/IDK/main/%E5%A2%A8%E6%B0%B4%E6%B8%B8%E6%88%8FFE%E9%80%9A%E8%A1%8C%E8%AF%81.txt"
 
--- 防止重复执行（同一会话内）
-if getgenv().GAMEPASS_EXECUTED then
+-- 标记是否已注册监听
+if not getgenv()._gamepass_listener_registered then
+    getgenv()._gamepass_listener_registered = true
+    
+    -- 监听服务器切换
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    local function onTeleport()
+        -- 延迟执行，确保新服务器加载完成
+        task.wait(1)
+        -- 重新加载脚本
+        loadstring(game:HttpGet(SCRIPT_URL))()
+    end
+    
+    -- 方法1：监听 OnTeleport 事件
+    pcall(function()
+        LocalPlayer.OnTeleport:Connect(onTeleport)
+        print("[Gamepass] 已注册 OnTeleport 监听")
+    end)
+    
+    -- 方法2：使用 queue_on_teleport（备用）
+    local queue_func = syn and syn.queue_on_teleport or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+    if queue_func then
+        pcall(function()
+            queue_func("loadstring(game:HttpGet('" .. SCRIPT_URL .. "'))()")
+            print("[Gamepass] 已注册 queue_on_teleport")
+        end)
+    end
+end
+
+-- ==================== 执行解锁 ====================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- 检查是否已解锁（避免重复）
+if LocalPlayer:GetAttribute("__OwnsPermGuard") == true then
+    print("[Gamepass] 当前服务器已解锁，跳过")
     return
 end
-getgenv().GAMEPASS_EXECUTED = true
 
 local GAMEPASS_CONFIG = {
     ["PERMANENT_GUARD"]       = { Bought = true, GamepassId = 0 },
@@ -19,16 +54,8 @@ local GAMEPASS_CONFIG = {
     ["CUSTOM_TAG"]            = { Bought = true, GamepassId = 0 }
 }
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
-local LocalPlayer = Players.LocalPlayer
-
--- 检查是否已经解锁
-if LocalPlayer:GetAttribute("__OwnsPermGuard") then
-    print("[Gamepass] 已经解锁，跳过")
-    return
-end
 
 local function GrantGamepass(configName, handlerFunc)
     local config = GAMEPASS_CONFIG[configName]
@@ -100,8 +127,8 @@ end
 
 StarterGui:SetCore("SendNotification", {
     Title = "SUCCESS",
-    Text = "Gamepass 已解锁",
+    Text = "Gamepass 已解锁\n传送后自动重新执行",
     Duration = 5
 })
 
-print("[Gamepass] 解锁完成")
+print("[Gamepass] 解锁完成，监听器已注册")
