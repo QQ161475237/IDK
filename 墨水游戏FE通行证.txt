@@ -1,0 +1,107 @@
+-- 注意：这个文件上传到 GitHub，文件名例如 gamepass.lua
+
+-- ==================== Gamepass 解锁脚本 ====================
+-- 此文件会被 queue_on_teleport 调用
+
+-- 防止重复执行（同一会话内）
+if getgenv().GAMEPASS_EXECUTED then
+    return
+end
+getgenv().GAMEPASS_EXECUTED = true
+
+local GAMEPASS_CONFIG = {
+    ["PERMANENT_GUARD"]       = { Bought = true, GamepassId = 0 },
+    ["EMOTE_PAGES"]           = { Bought = true, GamepassId = 0 },
+    ["VIP"]                   = { Bought = true, GamepassId = 0 },
+    ["PRIVATE_SERVER_PLUS"]   = { Bought = true, GamepassId = 0 },
+    ["GLASS_VISION"]          = { Bought = true, GamepassId = 0 },
+    ["VOTE_2X"]               = { Bought = true, GamepassId = 0 },
+    ["CUSTOM_TAG"]            = { Bought = true, GamepassId = 0 }
+}
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = Players.LocalPlayer
+
+-- 检查是否已经解锁
+if LocalPlayer:GetAttribute("__OwnsPermGuard") then
+    print("[Gamepass] 已经解锁，跳过")
+    return
+end
+
+local function GrantGamepass(configName, handlerFunc)
+    local config = GAMEPASS_CONFIG[configName]
+    if config and config.Bought then
+        task.spawn(handlerFunc, config)
+    end
+end
+
+GrantGamepass("PERMANENT_GUARD", function(config)
+    local args = { [1] = { Time = 0, PlayerName = LocalPlayer.Name, Action = "Purchase", Permanent = true, Role = "Guard" } }
+    ReplicatedStorage.Remotes.PlayableGuardRemote:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("__OwnsPermGuard", true)
+end)
+
+GrantGamepass("EMOTE_PAGES", function(config)
+    local args = { [1] = { EmoteSlots = 5, ExtraPages = 2, Action = "RefreshEmotes", PlayerName = LocalPlayer.Name } }
+    ReplicatedStorage.Remotes.PlayableGuardRemote:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("__OwnsEmotePages", true)
+end)
+
+GrantGamepass("VIP", function(config)
+    local args = {
+        [1] = {
+            VIP = true, Multipliers = { Luck = 2, Won = 2, XP = 2 },
+            Tag = "VIP", Action = "VIP", CustomOutfit = true, PlayerName = LocalPlayer.Name
+        }
+    }
+    ReplicatedStorage.Remotes.PlayableGuardRemote:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("C_OwnsVIPGamepass", true)
+end)
+
+GrantGamepass("PRIVATE_SERVER_PLUS", function(config)
+    local args = { [1] = { PrivateServer = true, Commands = true, Action = "PrivateServer", PlayerName = LocalPlayer.Name } }
+    ReplicatedStorage.Remotes.PlayableGuardRemote:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("__OwnsPSPlus", true)
+end)
+
+GrantGamepass("GLASS_VISION", function(config)
+    local args = {
+        [1] = {
+            GlassBridge = { Vision = "Manufacturer" }, EffectName = "RevealGlassTiles",
+            Permanent = true, Interval = 2, Action = "GlassBridge", PlayerName = LocalPlayer.Name
+        }
+    }
+    ReplicatedStorage.Remotes.Effects:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("__OwnsGlassManufacturerVision", true)
+end)
+
+GrantGamepass("VOTE_2X", function(config)
+    local args = { [1] = { VoteMultiplier = 2, VotingPower = 2, Action = "VoteMultiplier", PlayerName = LocalPlayer.Name } }
+    ReplicatedStorage.Remotes.PlayableGuardRemote:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("__Owns2XVoteGamepass", true)
+end)
+
+GrantGamepass("CUSTOM_TAG", function(config)
+    local args = { [1] = { CustomTag = true, TagSelection = true, Action = "CustomTag", PlayerName = LocalPlayer.Name } }
+    ReplicatedStorage.Remotes.PlayableGuardRemote:FireServer(unpack(args))
+    LocalPlayer:SetAttribute("__OwnsCustomPlayerTag", true)
+end)
+
+local TargetAttributes = {
+    "__OwnsPermGuard", "__OwnsEmotePages", "__OwnsVIPGamepass",
+    "__OwnsPSPlus", "__OwnsGlassManufacturerVision", "__Owns2XVoteGamepass", "__OwnsCustomPlayerTag"
+}
+
+for _, attrName in ipairs(TargetAttributes) do
+    LocalPlayer:SetAttribute(attrName, true)
+end
+
+StarterGui:SetCore("SendNotification", {
+    Title = "SUCCESS",
+    Text = "Gamepass 已解锁",
+    Duration = 5
+})
+
+print("[Gamepass] 解锁完成")
