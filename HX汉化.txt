@@ -1,5 +1,6 @@
 local Translations = {
     ["Game秒"] = "游戏功能",
+    ["Instant Interact"] = "秒互动",
     ["Player秒"] = "玩家功能",
     ["Guard秒"] = "守卫功能",
     ["Main"] = "主菜单",
