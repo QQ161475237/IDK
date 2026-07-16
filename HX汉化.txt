@@ -1,10 +1,10 @@
 local Translations = {
-    ["Game秒"] = "游戏功能",
+    ["Games"] = "游戏功能",
     ["Instant Interact"] = "秒互动",
-    ["Player秒"] = "玩家功能",
-    ["Guard秒"] = "守卫功能",
+    ["Players"] = "玩家功能",
+    ["Guards"] = "守卫功能",
     ["Main"] = "主菜单",
-    ["Setting秒"] = "设置",
+    ["Settings"] = "设置",
     ["Search"] = "搜索",
     ["Remove Injury"] = "移除受伤状态",
     ["Teleport to End"] = "传送到终点",
@@ -164,6 +164,35 @@ local Translations = {
     ["Auto Perfect Hit"] = "自动完美拔河",
     ["RAGE"] = "暴力",
     ["Legit"] = "稳定",
+    ["Stop On Red Light"] = "红灯时自动停",
+    ["Auto Escape"] = "自动逃生",
+    ["Teleport To Spawn"] = "传送至出生点",
+    ["Teleport To Spikes"] = "传送至尖刺区域",
+    ["Teleport Random Exit"] = "传送至随机逃生门",
+    ["Mingle"] = "？",
+    ["Freeze Rope"] = "固定绳索",
+    ["Remove Balance Mini Game"] = "移除平衡机制",
+    ["Glass Bridge"] = "玻璃桥",
+    ["Perm Guard"] = "永久守卫",
+    ["Faster Sprint"] = "速度加成",
+    ["2x vote"] = "双倍投票",
+    ["Old"] = "旧",
+    ["New"] = "新",
+    ["ESP Mode"] = "ESP功能",
+    ["Free Quicksliver"] = "免费快银(客户端)",
+    ["Jump Power"] = "跳跃高度",
+    ["Gravity"] = "重力",
+    ["Wins"] = "胜场",
+    ["Level"] = "等级",
+    ["Tag"] = "代码",
+    ["Tag Number"] = "代码数字",
+    ["Enable Won Boost(Level 5)"] = "开启金币加成",
+    ["Enable Strength Boost(Level 5)"] = "开启力量加成",
+    ["Free gamepass"] = "客户端免费游戏通行证",
+    ["Auto Skip Dialogues"] = "自动跳过对话",
+    ["Auto Collect Flashbang"] ="自动收集闪光弹",
+    ["Auto Collect Grenade"] = "自动捡手雷",
+    ["Unlock Fasster Sprint 6"] = "解锁速度6",
 }
 
 
@@ -245,6 +274,16 @@ local function loadScript()
     end
 end
 
+task.spawn(function()
+    task.wait(0.5)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "MerzzL汉化",
+            Text = "This script is the Chinese version.",
+            Duration = 3
+        })
+    end)
+end)
 
 if RunScriptFirst then
     loadScript()
