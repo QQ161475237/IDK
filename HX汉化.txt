@@ -1,3 +1,4 @@
+---------HSX-7562-3194-0835-4981-2470-1488-1029-6967
 local Translations = {
     ["Games"] = "游戏功能",
     ["Instant Interact"] = "秒互动",
@@ -193,6 +194,15 @@ local Translations = {
     ["Auto Collect Flashbang"] ="自动收集闪光弹",
     ["Auto Collect Grenade"] = "自动捡手雷",
     ["Unlock Fasster Sprint 6"] = "解锁速度6",
+    ["Complete Dalgona Shape"] = "一键完成扣糖饼",
+    ["Auto Flying Stone"] = "自动第二关飞石",
+    ["Auto Gonggi (spam this every time)"] = "自动抓石子（需要频繁重复触发）",
+    ["Auto Jegi"] = "自动踢毽子",
+    ["Auto Win [BETA]"] = "自动赢[测试中]",
+    ["Free Quicksilver"] = "免费客户端快银",
+    ["Peaberts ESP"] = "透视狗哥",
+    ["Unlock"] = "解锁",
+    ["Pentathlon"] = "五人六足",
 }
 
 
