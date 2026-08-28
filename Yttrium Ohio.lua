@@ -1,108 +1,14 @@
-local LocalPlayer = game:GetService("Players").LocalPlayer
-local PlayerGui = LocalPlayer.PlayerGui
-
-local OverlayGui = Instance.new("ScreenGui")
-OverlayGui.Name = "Yttrium_Overlay"
-OverlayGui.ResetOnSpawn = false
-OverlayGui.IgnoreGuiInset = true
-OverlayGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-if PlayerGui:FindFirstChild("Yttrium_Overlay") then
-    PlayerGui.Yttrium_Overlay:Destroy()
-end
-OverlayGui.Parent = PlayerGui
-
-local Theme = {
-    Background = Color3.fromRGB(20, 20, 20),
-    TextTitle = Color3.fromRGB(255, 255, 255)
-}
-
-local TopBar = Instance.new("Frame")
-TopBar.AnchorPoint = Vector2.new(1, 0)
-TopBar.Size = UDim2.new(0, 240, 0, 30)
-TopBar.Position = UDim2.new(1, -10, 0, 40)
-TopBar.BackgroundColor3 = Theme.Background
-TopBar.BorderSizePixel = 0
-TopBar.Parent = OverlayGui
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 6)
-UICorner.Parent = TopBar
-
-local TopStroke = Instance.new("UIStroke")
-TopStroke.Color = Color3.fromRGB(0, 255, 255)
-TopStroke.Thickness = 1
-TopStroke.Parent = TopBar
-
-local InfoLabel = Instance.new("TextLabel")
-InfoLabel.Size = UDim2.new(1, 0, 1, 0)
-InfoLabel.BackgroundTransparency = 1
-InfoLabel.TextColor3 = Theme.TextTitle
-InfoLabel.Font = Enum.Font.Code
-InfoLabel.TextSize = 12
-InfoLabel.Parent = TopBar
-
-local dragging, dragInput, dragStart, startPos
-
-TopBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = TopBar.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-TopBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        TopBar.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-task.spawn(function()
-    while OverlayGui.Parent do
-        local fps = math.floor(workspace:GetRealPhysicsFPS())
-        local ping = 0
-        pcall(function()
-            local pingStr = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString()
-            ping = math.floor(tonumber(pingStr:match("%d+")) or 0)
-        end)
-        InfoLabel.Text = string.format("Yttrium | 帧率: %d | 延迟: %dms", fps, ping)
-        task.wait(1)
-    end
-end)
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
+local devv = require(ReplicatedStorage:WaitForChild("devv"))
+local Signal = devv.load("Signal")
+local FireServer = Signal.FireServer
+local InvokeServer = Signal.InvokeServer
+local v3item = devv.load("v3item")
 
-local Character = LocalPlayer.Character
-local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-local HumanoidRootPart = Character and Character:FindFirstChild("HumanoidRootPart")
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-    HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
-    Humanoid = char:WaitForChild("Humanoid")
-end)
-
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/MillJackson832/-/refs/heads/main/Wind%20Ui.txt"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/gycgchgyfytdttr/shenqin/refs/heads/main/ui.lua"))()
 local Window = WindUI:CreateWindow({
-    Title = "Yttrium Hub",
-    Author = "俄亥俄州",
+    Title = "MerzzL ohio",
+    Author = "Yttrium Hub源码",
     Folder = "V3",
     Size = UDim2.fromOffset(200, 395),
     Transparent = true,
@@ -114,8 +20,8 @@ local Window = WindUI:CreateWindow({
     },
     SideBarWidth = 135,
     ScrollBarEnabled = true,
-    Background = "video:https://raw.githubusercontent.com/MillJackson832/_/refs/heads/main/Video_1774513461181_838.mp4",---背景
-    BackgroundImageTransparency = 0.4, --透明度
+    Background = "rbxassetid://139577718592804",---背景
+    BackgroundImageTransparency = 0.5, --透明度
 })
 
 Window:EditOpenButton({
