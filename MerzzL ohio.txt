@@ -46,6 +46,7 @@ Tabs.MainSection = Window:Section({
 Tabs.AuraTab        = Tabs.MainSection:Tab({ Title = "杀戮",     Icon = "sword" })
 Tabs.MoneyTab       = Tabs.MainSection:Tab({ Title = "刷钱",  Icon = "wallet" })
 Tabs.BypassTab      = Tabs.MainSection:Tab({ Title = "绕过",  Icon = "crown" })
+Tabs.ProTab         = Tabs.MainSection:Tab({ Title = "防护",  Icon = "key" })
 Tabs.PlayerTab      = Tabs.MainSection:Tab({ Title = "人物",  Icon = "user" })
 Tabs.MMMTab         = Tabs.MainSection:Tab({ Title = "实体美化",Icon = "moon" })
 Tabs.MHTab          = Tabs.MainSection:Tab({ Title = "枪械美化",Icon = "phone" })
@@ -54,7 +55,10 @@ Tabs.FfTab          = Tabs.MainSection:Tab({ Title = "防反",Icon = "shield" })
 Tabs.ByTab          = Tabs.MainSection:Tab({ Title = "ESP",Icon = "eye" })
 Tabs.TeTraXTab          = Tabs.MainSection:Tab({ Title = "TeTraX",Icon = "key" })
 Tabs.ServerTab          = Tabs.MainSection:Tab({ Title = "服务器",Icon = "list" })
+Tabs.LockTab          = Tabs.MainSection:Tab({ Title = "瞄准",Icon = "bot" })
+Tabs.RaybotTab          = Tabs.MainSection:Tab({ Title = "子弹追踪",Icon = "bot" })
 Tabs.ShujuTab          = Tabs.MainSection:Tab({ Title = "数据",Icon = "github" })
+Tabs.MeiTab          = Tabs.MainSection:Tab({ Title = "人物美化",Icon = "github" })
 
 
 Window:SelectTab(1)
@@ -1467,6 +1471,134 @@ Tabs.MoneyTab:Toggle({
     end
 })
 Tabs.MoneyTab:Toggle({
+    Title = "自动空投",
+    Value = false,
+    Callback = function(state)
+        getgenv().AutoPickAirdrop = state
+        if not state then return end
+
+        local Players = game:GetService("Players")
+        local Workspace = game:GetService("Workspace")
+        local localPlayer = Players.LocalPlayer
+
+        local function teleportToAirdrop()
+            local character = localPlayer.Character
+            if not character then return false end
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return false end
+            local originalPosition = rootPart.CFrame
+            local foundAirdrop = false
+
+            local airdrops = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Airdrops") and Workspace.Game.Airdrops:GetChildren() or {}
+            for _, airdrop in pairs(airdrops) do
+                if airdrop:FindFirstChild('Airdrop') and airdrop.Airdrop:FindFirstChild("ProximityPrompt") then
+                    local prompt = airdrop.Airdrop.ProximityPrompt
+                    prompt.RequiresLineOfSight = false
+                    prompt.HoldDuration = 0
+                    rootPart.CFrame = airdrop.Airdrop.CFrame
+                    task.wait(0.1)
+                    for i = 1, 15 do
+                        if fireproximityprompt then fireproximityprompt(prompt) else firesignal(prompt.Triggered) end
+                        task.wait(0.02)
+                    end
+                    foundAirdrop = true
+                    break
+                end
+            end
+
+            if not foundAirdrop then
+                rootPart.CFrame = originalPosition
+            else
+                task.wait(0.3)
+                rootPart.CFrame = originalPosition
+            end
+            return foundAirdrop
+        end
+
+        while task.wait(0.1) do
+            if not getgenv().AutoPickAirdrop then break end
+            local collected = teleportToAirdrop()
+            if not collected then
+                for i = 1, 10 do
+                    if not getgenv().AutoPickAirdrop then break end
+                    task.wait(0.1)
+                end
+            else
+                for i = 1, 3 do
+                    if not getgenv().AutoPickAirdrop then break end
+                    task.wait(0.1)
+                end
+            end
+        end
+    end
+})
+Tabs.MoneyTab:Toggle({
+    Title = "自动租房",
+    Value = false,
+    Callback = function(state)
+        getgenv().AutoRentHouse = state
+        if not state then return end
+
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Workspace = game:GetService("Workspace")
+        local devv = require(ReplicatedStorage.devv)
+        local Signal = devv.load("Signal")
+        local lastRentTime = tick()
+        local rentInterval = 2
+
+        while task.wait(0.1) do
+            if not getgenv().AutoRentHouse then break end
+            local currentTime = tick()
+            if currentTime - lastRentTime >= rentInterval then
+                pcall(function()
+                    for _, v in pairs(Workspace.HousingPlots:GetChildren()) do
+                        if not v:GetAttribute("Owner") then
+                            Signal.InvokeServer("rentHouse", v)
+                        end
+                    end
+                end)
+                lastRentTime = currentTime
+            end
+        end
+    end
+})
+
+Tabs.MoneyTab:Toggle({
+    Title = "自动售卖全部物品",
+    Value = false,
+    Callback = function(state)
+        getgenv().AutoSellAll = state
+        if not state then return end
+
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local devv = require(ReplicatedStorage.devv)
+        local Signal = devv.load("Signal")
+        local v3item = devv.load("v3item")
+        local item = v3item.inventory
+        local lastSellTime = tick()
+        local sellInterval = 1
+
+        local function autoSellItems()
+            for i, v in next, item.items do
+                local sellid = v.guid
+                pcall(function()
+                    Signal.FireServer("equip", sellid)
+                    Signal.FireServer("sellItem", sellid)
+                end)
+            end
+        end
+
+        while task.wait(0.1) do
+            if not getgenv().AutoSellAll then break end
+            local currentTime = tick()
+            if currentTime - lastSellTime >= sellInterval then
+                pcall(autoSellItems)
+                lastSellTime = currentTime
+            end
+        end
+    end
+})
+Tabs.MoneyTab:Toggle({
     Title = "自动开启材料盒",
     Value = false,
     Callback = function(state)
@@ -2652,7 +2784,79 @@ end
 end
 })
 
+-- 自动哑铃
+local weightFarmEnabled = false
+Tabs.MoneyTab:Toggle({
+Title = "自动使用哑铃锻炼",
+Value = false,
+Callback = function(state)
+weightFarmEnabled = state
+if state then
+task.spawn(function()
+while weightFarmEnabled do
+local equippedName = v3item.inventory.getEquippedItem().name
+if equippedName == "Dumbell" then
+Signal.FireServer("liftDumbell")
+end
+task.wait(0.5)
+end
+end)
+end
+end
+})
+
 local craftConnection
+
+Tabs.BypassTab:Button({
+    Title = "绕过移动经销商",
+    Callback = function()
+local pjyd pjyd=hookmetamethod(game,"__namecall",function(self,...)local args={...}local method=getnamecallmethod()if method=="InvokeServer" and args[2]==true then args[2]=false return pjyd(self,unpack(args))end return pjyd(self,...)end)
+game:GetService("Players").LocalPlayer:SetAttribute("mobileDealer",true)
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local mobileDealer=require(ReplicatedStorage.devv.shared.Indicies.mobileDealer)
+
+for category,items in pairs(mobileDealer)do 
+    for _,item in ipairs(items)do 
+        item.stock=999999 
+    end 
+end
+
+table.insert(mobileDealer.Gun,{itemName="Acid Gun",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Candy Bucket",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Golden Rose",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Black Rose",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Dollar Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Bat Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Bunny Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Clover Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Ghost Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Gold Clover Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Heart Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Skull Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Snowflake Balloon",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Admin AK-47",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Admin Nuke Launcher",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Admin RPG",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Void Gem",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Pulse Rifle",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Unusual Money Printer",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Money Printer",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="Trident",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="NextBot Grenade",stock=9999})
+table.insert(mobileDealer.Gun,{itemName="El Fuego",stock=9999})
+    end
+})
+
+Tabs.BypassTab:Button({
+    Title = "绕过高级动作",
+    Callback = function()
+        for _, v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.Emotes.Frame.ScrollingFrame:GetDescendants()) do
+            if v.Name == "Locked" then
+                v.Visible = false
+            end
+        end
+    end
+})
 
 Tabs.BypassTab:Button({
     Title = "绕过飞行封禁",
@@ -2684,6 +2888,191 @@ Tabs.BypassTab:Button({
                     end)
                 end
             end
+        end
+    end
+})
+
+local maskOptions = {"Surgeon Mask", "Hockey Mask", "Blue Bandana", "Black Bandana", "Red Bandana"}
+local selectedMask = "Surgeon Mask"
+local autoMaskEnabled2 = false
+
+Tabs.ProTab:Dropdown({
+    Title = "选择口罩类型",
+    Values = {"口罩", "杰森面具", "蓝色头巾", "黑色头巾", "红色头巾"},
+    Value = "口罩",
+    Callback = function(option)
+        if option == "口罩" then
+            selectedMask = "Surgeon Mask"
+        elseif option == "杰森面具" then
+            selectedMask = "Hockey Mask"
+        elseif option == "蓝色头巾" then
+            selectedMask = "Blue Bandana"
+        elseif option == "黑色头巾" then
+            selectedMask = "Black Bandana"
+        elseif option == "红色头巾" then
+            selectedMask = "Red Bandana"
+        end
+    end
+})
+
+Tabs.ProTab:Toggle({
+    Title = "自动口罩(多种)",
+    Default = false,
+    Callback = function(Value)
+        autoMaskEnabled2 = Value
+        
+        if not Value then return end
+        
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
+            local item = require(game:GetService("ReplicatedStorage").devv).load("v3item")
+
+            local function purchaseAndEquipMask()
+                if not autoMaskEnabled2 then return end
+                
+                local hasMask = false
+                for _, v in pairs(item.inventory.items) do
+                    if v.name == selectedMask then
+                        hasMask = true
+                        break
+                    end
+                end
+
+                if not hasMask then
+                    Signal.InvokeServer("attemptPurchase", selectedMask)
+                    task.wait()
+                end
+
+                for _, v in pairs(item.inventory.items) do
+                    if v.name == selectedMask then
+                        Signal.FireServer("equip", v.guid)
+                        Signal.FireServer("wearMask", v.guid)
+                        break
+                    end
+                end
+            end
+
+            purchaseAndEquipMask()
+
+            local conn
+            conn = LocalPlayer.CharacterAdded:Connect(function(char)
+                char:WaitForChild("HumanoidRootPart")
+                task.wait()
+                purchaseAndEquipMask()
+            end)
+
+            while autoMaskEnabled2 do
+                task.wait()
+            end
+
+            if conn then conn:Disconnect() end
+        end)
+    end
+})
+Tabs.ProTab:Toggle({
+    Title = "自动买护甲",
+    Default = false,
+    Callback = function(Value)
+        AutoArmor = Value
+        if Value then
+            local heartbeat = game:GetService("RunService").Heartbeat
+            local connection
+            connection = heartbeat:Connect(function()
+                if not AutoArmor then
+                    connection:Disconnect()
+                    return
+                end
+                
+                pcall(function()
+                    local player = game:GetService('Players').LocalPlayer
+                    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 35 then
+                        local b1 = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory.items
+                        local hasLightVest = false
+                        
+                        for i, v in next, b1 do
+                            if v.name == "Light Vest" then
+                                hasLightVest = true
+                                local light = v.guid
+                                local armor = player:GetAttribute('armor')
+                                if armor == nil or armor <= 0 then
+                                    require(game:GetService("ReplicatedStorage").devv).load("Signal").FireServer("equip", light)
+                                    require(game:GetService("ReplicatedStorage").devv).load("Signal").FireServer("useConsumable", light)
+                                    require(game:GetService("ReplicatedStorage").devv).load("Signal").FireServer("removeItem", light)
+                                end
+                                break
+                            end
+                        end
+                        
+                        if not hasLightVest then
+                            require(game:GetService("ReplicatedStorage").devv).load("Signal").InvokeServer("attemptPurchase", "Light Vest")
+                        end
+                    end
+                end)
+            end)
+        end
+    end
+})
+Tabs.ProTab:Toggle({
+    Title = "自动购买面具",
+    Value = false,
+    Callback = function(state) 
+        autokz = state
+        if autokz then
+            while autokz and task.wait(1) do
+                local player = game:GetService("Players").LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local Mask = character:FindFirstChild("Hockey Mask")
+                local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
+                local b1 = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory.items
+                if not Mask then
+                    Signal.InvokeServer("attemptPurchase", "Hockey Mask")
+                    for i, v in next, b1 do
+                        if v.name == "Hockey Mask" then
+                            local sugid = v.guid
+                            if not Mask then
+                                Signal.FireServer("equip", sugid)
+                                Signal.FireServer("wearMask", sugid)
+                            end
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+Tabs.ProTab:Toggle({
+    Title = "自动回血",
+    Default = false,
+    Callback = function(Value)
+        if healThread then
+            healThread:Disconnect()
+            healThread = nil
+        end
+
+        if Value then
+            local heartbeat = game:GetService("RunService").Heartbeat
+            healThread = heartbeat:Connect(function()
+                Signal.InvokeServer("attemptPurchase", 'Bandage')
+                local inv = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory
+                for _, v in next, inv.items do
+                    if v.name == 'Bandage' then
+                        local bande = v.guid
+                        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                        local Humanoid = Character:WaitForChild('Humanoid')
+                        if Humanoid.Health >= 5 and Humanoid.Health < Humanoid.MaxHealth then
+                            Signal.FireServer("equip", bande)
+                            Signal.FireServer("useConsumable", bande)
+                            Signal.FireServer("removeItem", bande)
+                        end
+                        break
+                    end
+                end
+            end)
         end
     end
 })
@@ -6250,6 +6639,312 @@ Tabs.ServerTab:Button({
         (game:GetService("TeleportService")):TeleportToPlaceInstance(game.PlaceId, _G.JobId);
     end
 })
+local AimbotConfig = {
+    Enabled = false,
+    WallCheck = true,
+    PredictAim = false,
+    PredictValue = 1.5,
+    AimPart = "Head",
+    Radius = 200,
+    CheckShield = true,
+    AimMode = "Camera"
+}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local aimConnection = nil
+
+local function hasShieldProtection(player)
+    if not player or not player.Character then return false end
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    if not humanoid then return false end
+    for _, desc in pairs(player.Character:GetDescendants()) do
+        if desc:IsA("ForceField") or desc.Name:lower():find("shield") then
+            return true
+        end
+    end
+    return false
+end
+
+local function getNearestTarget()
+    local nearest = nil
+    local minDist = math.huge
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == LocalPlayer then continue end
+
+        local char = plr.Character
+        if not char or not char:FindFirstChild(AimbotConfig.AimPart) or not char:FindFirstChild("Humanoid") then continue end
+        if char.Humanoid.Health <= 0 then continue end
+
+        if AimbotConfig.CheckShield and hasShieldProtection(plr) then
+            continue
+        end
+
+        local worldPos = char[AimbotConfig.AimPart].Position
+        local screenPos, onScreen = Camera:WorldToViewportPoint(worldPos)
+
+        local dist
+        if AimbotConfig.AimMode == "Camera" then
+            if not onScreen then continue end
+            dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+            if dist > AimbotConfig.Radius then continue end
+        else
+            dist = (worldPos - Camera.CFrame.Position).Magnitude
+        end
+
+        if AimbotConfig.WallCheck then
+            local rayParams = RaycastParams.new()
+            rayParams.FilterDescendantsInstances = {LocalPlayer.Character}
+            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+            local ray = workspace:Raycast(Camera.CFrame.Position, worldPos - Camera.CFrame.Position, rayParams)
+            local canSee = ray and ray.Instance and ray.Instance:IsDescendantOf(char)
+            if not canSee then continue end
+        end
+
+        if AimbotConfig.PredictAim then
+            worldPos = worldPos + char[AimbotConfig.AimPart].Velocity * AimbotConfig.PredictValue / 10
+        end
+
+        if dist < minDist then
+            minDist = dist
+            nearest = {Part = char[AimbotConfig.AimPart], WorldPos = worldPos}
+        end
+    end
+    return nearest
+end
+
+Tabs.LockTab:Toggle({
+    Title = "自瞄开关",
+    Default = false,
+    Callback = function(Value)
+        AimbotConfig.Enabled = Value
+
+        if aimConnection then
+            aimConnection:Disconnect()
+            aimConnection = nil
+        end
+
+        if Value then
+            aimConnection = RunService.RenderStepped:Connect(function()
+                if not AimbotConfig.Enabled then return end
+                local tar = getNearestTarget()
+                if tar and Camera then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, tar.WorldPos)
+                end
+            end)
+        end
+    end
+})
+
+Tabs.LockTab:Toggle({
+    Title = "墙壁检测",
+    Default = true,
+    Callback = function(Value)
+        AimbotConfig.WallCheck = Value
+    end
+})
+
+Tabs.LockTab:Toggle({
+    Title = "预判自瞄",
+    Default = false,
+    Callback = function(Value)
+        AimbotConfig.PredictAim = Value
+    end
+})
+
+Tabs.LockTab:Slider({
+    Title = "预判倍数",
+    Desc = "预判强度",
+    Value = {
+        Min = 0.1,
+        Max = 5,
+        Default = 1.5
+    },
+    Callback = function(Value)
+        AimbotConfig.PredictValue = Value
+    end
+})
+
+Tabs.LockTab:Dropdown({
+    Title = "瞄准部位",
+    Values = {
+        "头部",
+        "身体"
+    },
+    Default = "头部",
+    Callback = function(Value)
+        if Value == "头部" then
+            AimbotConfig.AimPart = "Head"
+        elseif Value == "身体" then
+            AimbotConfig.AimPart = "UpperTorso"
+        end
+    end
+})
+
+Tabs.LockTab:Toggle({
+    Title = "护盾检测",
+    Default = true,
+    Callback = function(Value)
+        AimbotConfig.CheckShield = Value
+    end
+})
+
+Tabs.LockTab:Dropdown({
+    Title = "瞄准模式",
+    Values = {
+        "相机瞄准",
+        "最近瞄准"
+    },
+    Default = "相机瞄准",
+    Callback = function(Value)
+        if Value == "相机瞄准" then
+            AimbotConfig.AimMode = "Camera"
+        elseif Value == "最近瞄准" then
+            AimbotConfig.AimMode = "Nearest"
+        end
+    end
+})
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local BulletConfig = {
+    Enabled = false,
+    CheckShield = false,
+    CheckFriend = false,
+    ShootPart = "Head",
+    ShootMode = "Camera",
+    Radius = 300
+}
+
+local bulletTrackingHook = nil
+
+local function hasShield(char)
+    if not char then return false end
+    if char:FindFirstChildOfClass("ForceField") then return true end
+    for _, d in pairs(char:GetDescendants()) do
+        if d.Name:lower():find("shield") then return true end
+    end
+    return false
+end
+
+local function isFriend(plr)
+    return LocalPlayer:IsFriendsWith(plr.UserId)
+end
+
+local function getTarget()
+    local target = nil
+    local minDist = math.huge
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr == LocalPlayer then continue end
+        local char = plr.Character
+        if not char then continue end
+
+        local part = char:FindFirstChild(BulletConfig.ShootPart)
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not part or not hum or hum.Health <= 0 then continue end
+
+        if BulletConfig.CheckShield and hasShield(char) then
+            continue
+        end
+
+        if BulletConfig.CheckFriend and isFriend(plr) then
+            continue
+        end
+
+        local wp = part.Position
+        local sp, os = Camera:WorldToViewportPoint(wp)
+        local dist = (wp - Camera.CFrame.Position).Magnitude
+
+        if BulletConfig.ShootMode == "Camera" then
+            if not os then continue end
+            local sdist = (Vector2.new(sp.X,sp.Y)-center).Magnitude
+            if sdist > BulletConfig.Radius then continue end
+        end
+
+        if dist < minDist then
+            minDist = dist
+            target = part
+        end
+    end
+    return target
+end
+
+Tabs.RaybotTab:Toggle({
+    Title = "子弹追踪",
+    Default = false,
+    Callback = function(Value)
+        BulletConfig.Enabled = Value
+
+        if bulletTrackingHook then
+            hookmetamethod(game, "__namecall", bulletTrackingHook)
+            bulletTrackingHook = nil
+        end
+
+        if Value then
+            bulletTrackingHook = hookmetamethod(game, "__namecall", function(self,...)
+                local m = getnamecallmethod()
+                local args = {...}
+                if m == "Raycast" and not checkcaller() then
+                    local origin = args[1] or Camera.CFrame.Position
+                    local tar = getTarget()
+                    if tar then
+                        return {
+                            Instance = tar,
+                            Position = tar.Position,
+                            Normal = (origin-tar.Position).Unit,
+                            Material = Enum.Material.Plastic,
+                            Distance = (tar.Position-origin).Magnitude
+                        }
+                    end
+                end
+                return bulletTrackingHook(self,...)
+            end)
+        end
+    end
+})
+
+Tabs.RaybotTab:Toggle({
+    Title = "护盾检测",
+    Default = false,
+    Callback = function(Value)
+        BulletConfig.CheckShield = Value
+    end
+})
+
+Tabs.RaybotTab:Toggle({
+    Title = "好友检测",
+    Default = false,
+    Callback = function(Value)
+        BulletConfig.CheckFriend = Value
+    end
+})
+
+Tabs.RaybotTab:Dropdown({
+    Title = "射击部位",
+    Values = {"头部","身体"},
+    Default = "头部",
+    Callback = function(Value)
+        BulletConfig.ShootPart = Value == "头部" and "Head" or "UpperTorso"
+    end
+})
+
+Tabs.RaybotTab:Dropdown({
+    Title = "射击方式",
+    Values = {"相机判断","最近判断"},
+    Default = "相机判断",
+    Callback = function(Value)
+        BulletConfig.ShootMode = Value == "相机判断" and "Camera" or "Nearest"
+    end
+})
+
 
 Tabs.ShujuTab:Section({
     Title = "当前钱数 " .. require(game:GetService("ReplicatedStorage").devv.datum.state).data.money,
@@ -6271,4 +6966,252 @@ Tabs.ShujuTab:Section({
 })
 Tabs.ShujuTab:Section({
     Title = "工作赚钱金钱 " .. require(game:GetService("ReplicatedStorage").devv.datum.state).data.jobEarnings,
+})
+
+Tabs.MeiTab:Button({
+    Title = "无头",
+    Callback = function()
+        local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function setHeadInvisible(char)
+    local function hideHead()
+        local head = char:FindFirstChild("Head")
+        if head then
+            head.Transparency = 1
+            for _, v in pairs(head:GetChildren()) do
+                if v:IsA("Decal") then v:Destroy() end
+            end
+        end
+    end
+    hideHead()
+    char.ChildAdded:Connect(function(child)
+        if child.Name == "Head" then
+            task.wait(0.01)
+            child.Transparency = 1
+            for _, v in pairs(child:GetChildren()) do
+                if v:IsA("Decal") then v:Destroy() end
+            end
+        end
+    end)
+end
+
+if LocalPlayer.Character then setHeadInvisible(LocalPlayer.Character) end
+LocalPlayer.CharacterAdded:Connect(setHeadInvisible)
+
+    end
+})
+Tabs.MeiTab:Button({
+    Title = "紫色特效",
+    Callback = function()
+        local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local Humanoid = Character:WaitForChild("Humanoid")
+local trailEnabled = true
+local glowPart = nil
+local lastWavePoints = {}
+
+getgenv().TrailConfig = {
+    Color1 = Color3.fromRGB(200, 180, 255),
+    Color2 = Color3.fromRGB(160, 130, 230),
+    Color3 = Color3.fromRGB(140, 100, 220),
+    WaveCount = 10,
+    WaveAmplitude = 2.5,
+    TrailLength = 18,
+    FadeSpeed = 0.1,
+    GlowBrightness = 7,
+    GlowRange = 5,
+    ParticleRate = 300,
+    ParticleSize = 1.2,
+    CoreParticleRate = 400,
+    CoreParticleSize = 1.0
+}
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    HumanoidRootPart = char:WaitForChild("HumanoidRootPart", 5)
+    Humanoid = char:WaitForChild("Humanoid", 5)
+    if glowPart and glowPart.Parent then
+        glowPart:Destroy()
+        glowPart = nil
+    end
+    if HumanoidRootPart and Humanoid then
+        pcall(createBodyGlow)
+        lastWavePoints = {}
+    end
+end)
+
+local function clearOldEffects()
+    for _, v in pairs(Workspace:GetChildren()) do
+        if v:IsA("Folder") and v.Name == "PlayerWaveTrail" then
+            pcall(function() v:Destroy() end)
+        end
+    end
+    if Character then
+        for _, v in pairs(Character:GetChildren()) do
+            if v.Name == "PlayerBodyGlow" then
+                pcall(function() v:Destroy() end)
+            end
+        end
+    end
+end
+
+clearOldEffects()
+
+local function createBodyGlow()
+    if not Character or not HumanoidRootPart then return end
+    glowPart = Instance.new("Part")
+    glowPart.Name = "PlayerBodyGlow"
+    glowPart.Size = Vector3.new(4, 6, 4)
+    glowPart.Transparency = 1
+    glowPart.CanCollide = false
+    glowPart.Anchored = false
+    glowPart.CanTouch = false
+    glowPart.Massless = true
+    glowPart.Parent = Character
+
+    local weld = Instance.new("Weld")
+    weld.Part0 = HumanoidRootPart
+    weld.Part1 = glowPart
+    weld.C0 = CFrame.identity
+    weld.C1 = CFrame.identity
+    weld.Parent = glowPart
+
+    local pointLight = Instance.new("PointLight")
+    pointLight.Brightness = getgenv().TrailConfig.GlowBrightness
+    pointLight.Range = getgenv().TrailConfig.GlowRange
+    pointLight.Color = getgenv().TrailConfig.Color2
+    pointLight.Parent = glowPart
+
+    local coreParticle = Instance.new("ParticleEmitter")
+    coreParticle.Parent = glowPart
+    coreParticle.Size = NumberSequence.new(0.3, getgenv().TrailConfig.CoreParticleSize)
+    coreParticle.Transparency = NumberSequence.new(0.1, 0.85)
+    coreParticle.Lifetime = NumberRange.new(0.2, 0.7)
+    coreParticle.Rate = getgenv().TrailConfig.CoreParticleRate
+    coreParticle.Speed = NumberRange.new(0.8, 2.0)
+    coreParticle.VelocitySpread = 180
+    coreParticle.Color = ColorSequence.new(getgenv().TrailConfig.Color1, getgenv().TrailConfig.Color3)
+    coreParticle.EmissionDirection = Enum.EmissionDirection.Outward
+    coreParticle.Rotation = NumberRange.new(0, 360)
+    coreParticle.RotationSpeed = NumberRange.new(-50, 50)
+
+    local coreParticle2 = Instance.new("ParticleEmitter")
+    coreParticle2.Parent = glowPart
+    coreParticle2.Size = NumberSequence.new(0.2, 0.8)
+    coreParticle2.Transparency = NumberSequence.new(0.2, 0.9)
+    coreParticle2.Lifetime = NumberRange.new(0.3, 0.9)
+    coreParticle2.Rate = getgenv().TrailConfig.CoreParticleRate / 2
+    coreParticle2.Speed = NumberRange.new(0.5, 1.5)
+    coreParticle2.VelocitySpread = 180
+    coreParticle2.Color = ColorSequence.new(getgenv().TrailConfig.Color2, getgenv().TrailConfig.Color1)
+    coreParticle2.EmissionDirection = Enum.EmissionDirection.Upward
+end
+
+pcall(createBodyGlow)
+
+local function getWavePoints(origin, step)
+    if not origin then return {} end
+    local points = {}
+    local config = getgenv().TrailConfig
+    for i = 0, config.WaveCount do
+        local t = i / config.WaveCount
+        local offsetX = math.sin(t * math.pi * 2 + tick() * 3) * config.WaveAmplitude * step
+        local offsetZ = math.cos(t * math.pi * 2 + tick() * 2) * config.WaveAmplitude * step
+        local offsetY = math.sin(t * math.pi * 1 + tick() * 4) * config.WaveAmplitude * step / 2
+        local pos = origin + Vector3.new(offsetX, offsetY, offsetZ)
+        table.insert(points, pos)
+    end
+    return points
+end
+
+local function createWaveTrail()
+    if not Character or not HumanoidRootPart or Humanoid.Health <= 0 or not trailEnabled then return end
+    local config = getgenv().TrailConfig
+    local currentPos = HumanoidRootPart.Position + Vector3.new(0, 0.5, 0)
+    
+    table.insert(lastWavePoints, 1, currentPos)
+    if #lastWavePoints > config.TrailLength then
+        table.remove(lastWavePoints, #lastWavePoints)
+    end
+
+    for i, pos in ipairs(lastWavePoints) do
+        local fade = i / #lastWavePoints
+        local wavePoints = getWavePoints(pos, fade)
+        if #wavePoints < 2 then continue end
+
+        local trailFolder = Instance.new("Folder")
+        trailFolder.Name = "PlayerWaveTrail"
+        trailFolder.Parent = Workspace
+
+        for j = 1, #wavePoints - 1 do
+            local p1 = wavePoints[j]
+            local p2 = wavePoints[j + 1]
+            local midPos = (p1 + p2) / 2
+
+            local particle = Instance.new("Part")
+            particle.Size = Vector3.new(0.1, 0.1, 0.1)
+            particle.Transparency = 1
+            particle.CanCollide = false
+            particle.Anchored = true
+            particle.Position = midPos
+            particle.Parent = trailFolder
+
+            local emitter = Instance.new("ParticleEmitter")
+            emitter.Parent = particle
+            emitter.Size = NumberSequence.new(config.ParticleSize * fade, config.ParticleSize * fade * 0.3)
+            emitter.Transparency = NumberSequence.new(0.05 * fade, 0.9)
+            emitter.Lifetime = NumberRange.new(0.4 * fade, 1.3 * fade)
+            emitter.Rate = config.ParticleRate * fade
+            emitter.Speed = NumberRange.new(0.5, 1.2)
+            emitter.VelocitySpread = 120
+            emitter.Color = ColorSequence.new(config.Color1, config.Color2, config.Color3)
+            emitter.EmissionDirection = Enum.EmissionDirection.Both
+            emitter.Drag = 2
+            emitter.RotationSpeed = NumberRange.new(-30, 30)
+
+            local emitter2 = Instance.new("ParticleEmitter")
+            emitter2.Parent = particle
+            emitter2.Size = NumberSequence.new(0.2 * fade, 0.6 * fade)
+            emitter2.Transparency = NumberSequence.new(0.1 * fade, 0.85)
+            emitter2.Lifetime = NumberRange.new(0.3 * fade, 1.0 * fade)
+            emitter2.Rate = config.ParticleRate * fade / 2
+            emitter2.Speed = NumberRange.new(0.3, 0.9)
+            emitter2.VelocitySpread = 180
+            emitter2.Color = ColorSequence.new(config.Color3, config.Color2)
+            emitter2.EmissionDirection = Enum.EmissionDirection.Outward
+
+            local light = Instance.new("PointLight")
+            light.Parent = particle
+            light.Brightness = config.GlowBrightness * fade * 0.6
+            light.Range = config.GlowRange * fade
+            light.Color = config.Color2
+        end
+
+        task.delay(config.FadeSpeed * 5, function()
+            if trailFolder and trailFolder.Parent then
+                pcall(function()
+                    for _, v in pairs(trailFolder:GetChildren()) do
+                        local tween = TweenService:Create(v, TweenInfo.new(0.3), {Transparency = 1})
+                        tween:Play()
+                        tween.Completed:Connect(function() v:Destroy() end)
+                    end
+                    task.wait(0.3)
+                    trailFolder:Destroy()
+                end)
+            end
+        end)
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    pcall(createWaveTrail)
+end)
+
+    end
 })
