@@ -8,7 +8,7 @@ local v3item = devv.load("v3item")
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/gycgchgyfytdttr/shenqin/refs/heads/main/ui.lua"))()
 local Window = WindUI:CreateWindow({
     Title = "MerzzL ohio",
-    Author = "Yttrium Hub源码",
+    Author = "二改Yttrium",
     Folder = "V3",
     Size = UDim2.fromOffset(200, 395),
     Transparent = true,
@@ -46,7 +46,7 @@ Tabs.MainSection = Window:Section({
 Tabs.AuraTab        = Tabs.MainSection:Tab({ Title = "杀戮",     Icon = "sword" })
 Tabs.MoneyTab       = Tabs.MainSection:Tab({ Title = "刷钱",  Icon = "wallet" })
 Tabs.BypassTab      = Tabs.MainSection:Tab({ Title = "绕过",  Icon = "crown" })
-Tabs.ProTab         = Tabs.MainSection:Tab({ Title = "防护",  Icon = "key" })
+Tabs.ProTab         = Tabs.MainSection:Tab({ Title = "防护(Beta防反作弊请勿使用)",  Icon = "key" })
 Tabs.PlayerTab      = Tabs.MainSection:Tab({ Title = "人物",  Icon = "user" })
 Tabs.MMMTab         = Tabs.MainSection:Tab({ Title = "实体美化",Icon = "moon" })
 Tabs.MHTab          = Tabs.MainSection:Tab({ Title = "枪械美化",Icon = "phone" })
@@ -2892,191 +2892,401 @@ Tabs.BypassTab:Button({
     end
 })
 
-local maskOptions = {"Surgeon Mask", "Hockey Mask", "Blue Bandana", "Black Bandana", "Red Bandana"}
-local selectedMask = "Surgeon Mask"
-local autoMaskEnabled2 = false
-
-Tabs.ProTab:Dropdown({
-    Title = "选择口罩类型",
-    Values = {"口罩", "杰森面具", "蓝色头巾", "黑色头巾", "红色头巾"},
-    Value = "口罩",
-    Callback = function(option)
-        if option == "口罩" then
-            selectedMask = "Surgeon Mask"
-        elseif option == "杰森面具" then
-            selectedMask = "Hockey Mask"
-        elseif option == "蓝色头巾" then
-            selectedMask = "Blue Bandana"
-        elseif option == "黑色头巾" then
-            selectedMask = "Black Bandana"
-        elseif option == "红色头巾" then
-            selectedMask = "Red Bandana"
+local function setupTeleportSystem()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local RunService = game:GetService("RunService")
+    local Workspace = game:GetService("Workspace")
+    
+    local SHOP_POINTS = {
+        Armor = Vector3.new(1111.73, 19.26, -1338.21),
+        Bandage = Vector3.new(1173.90, 25.61, -972.10)
+    }
+    
+    local platformPart = nil
+    
+    local function createPlatform(pos)
+        if platformPart then platformPart:Destroy() end
+        platformPart = Instance.new("Part")
+        platformPart.Name = "TeleportPlatform"
+        platformPart.Size = Vector3.new(5, 0.5, 5)
+        platformPart.Position = pos - Vector3.new(0, 2, 0)
+        platformPart.Anchored = true
+        platformPart.CanCollide = true
+        platformPart.Transparency = 0.5
+        platformPart.BrickColor = BrickColor.new("Bright green")
+        platformPart.Material = Enum.Material.Neon
+        platformPart.Parent = Workspace
+        return platformPart
+    end
+    
+    local function removePlatform()
+        if platformPart then
+            platformPart:Destroy()
+            platformPart = nil
         end
     end
-})
-
-Tabs.ProTab:Toggle({
-    Title = "自动口罩(多种)",
-    Default = false,
-    Callback = function(Value)
-        autoMaskEnabled2 = Value
-        
-        if not Value then return end
-        
-        task.spawn(function()
-            local Players = game:GetService("Players")
-            local LocalPlayer = Players.LocalPlayer
-            local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
-            local item = require(game:GetService("ReplicatedStorage").devv).load("v3item")
-
-            local function purchaseAndEquipMask()
-                if not autoMaskEnabled2 then return end
-                
-                local hasMask = false
-                for _, v in pairs(item.inventory.items) do
-                    if v.name == selectedMask then
-                        hasMask = true
-                        break
-                    end
-                end
-
-                if not hasMask then
-                    Signal.InvokeServer("attemptPurchase", selectedMask)
-                    task.wait()
-                end
-
-                for _, v in pairs(item.inventory.items) do
-                    if v.name == selectedMask then
-                        Signal.FireServer("equip", v.guid)
-                        Signal.FireServer("wearMask", v.guid)
-                        break
-                    end
-                end
+    
+    local tempCFrame = nil
+    local isTeleporting = false
+    local originalCanCollide = {}
+    
+    local function getRoot()
+        local char = LocalPlayer.Character
+        if not char then return nil end
+        return char:FindFirstChild("HumanoidRootPart")
+    end
+    
+    local function getHumanoid()
+        local char = LocalPlayer.Character
+        if not char then return nil end
+        return char:FindFirstChildOfClass("Humanoid")
+    end
+    
+    local function enableNoclip()
+        local char = LocalPlayer.Character
+        if not char then return end
+        originalCanCollide = {}
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                originalCanCollide[part] = part.CanCollide
+                part.CanCollide = false
             end
-
-            purchaseAndEquipMask()
-
-            local conn
-            conn = LocalPlayer.CharacterAdded:Connect(function(char)
-                char:WaitForChild("HumanoidRootPart")
-                task.wait()
-                purchaseAndEquipMask()
-            end)
-
-            while autoMaskEnabled2 do
-                task.wait()
+        end
+    end
+    
+    local function disableNoclip()
+        for part, canCollide in pairs(originalCanCollide) do
+            if part and part.Parent then
+                part.CanCollide = canCollide
             end
-
-            if conn then conn:Disconnect() end
+        end
+        originalCanCollide = {}
+    end
+    
+    local function recordCurrentPosition()
+        local root = getRoot()
+        if root then
+            tempCFrame = root.CFrame
+            return true
+        end
+        return false
+    end
+    
+    local function flyTo(targetPos, duration)
+        duration = duration or 0.5
+        local root = getRoot()
+        local humanoid = getHumanoid()
+        if not root or not humanoid then return false end
+        
+        createPlatform(targetPos)
+        
+        local startPos = root.Position
+        local targetCF = CFrame.new(targetPos)
+        
+        for _, child in ipairs(root:GetChildren()) do
+            if child:IsA("BodyPosition") or child:IsA("BodyGyro") or child:IsA("BodyVelocity") then
+                child:Destroy()
+            end
+        end
+        
+        humanoid.PlatformStand = true
+        root.Velocity = Vector3.new(0, 0, 0)
+        root.RotVelocity = Vector3.new(0, 0, 0)
+        enableNoclip()
+        
+        local startTime = tick()
+        while tick() - startTime < duration do
+            local elapsed = tick() - startTime
+            local progress = math.min(elapsed / duration, 1)
+            local eased = 1 - (1 - progress) * (1 - progress)
+            local currentPos = startPos + (targetPos - startPos) * eased
+            root.CFrame = CFrame.new(currentPos)
+            task.wait(0.005)
+        end
+        
+        root.CFrame = targetCF
+        root.Velocity = Vector3.new(0, 0, 0)
+        root.RotVelocity = Vector3.new(0, 0, 0)
+        task.wait(0.3)
+        
+        local bp = Instance.new("BodyPosition")
+        bp.Position = targetPos
+        bp.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        bp.D = 99999
+        bp.P = 999999
+        bp.Parent = root
+        
+        local bg = Instance.new("BodyGyro")
+        bg.CFrame = root.CFrame
+        bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bg.P = 999999
+        bg.D = 99999
+        bg.Parent = root
+        
+        local lockConnection = RunService.Heartbeat:Connect(function()
+            if not root or not root.Parent then
+                lockConnection:Disconnect()
+                return
+            end
+            bp.Position = targetPos
+            bg.CFrame = root.CFrame
         end)
+        
+        return bp, bg, lockConnection
     end
-})
-Tabs.ProTab:Toggle({
-    Title = "自动买护甲",
-    Default = false,
-    Callback = function(Value)
-        AutoArmor = Value
-        if Value then
-            local heartbeat = game:GetService("RunService").Heartbeat
-            local connection
-            connection = heartbeat:Connect(function()
-                if not AutoArmor then
-                    connection:Disconnect()
-                    return
-                end
-                
-                pcall(function()
-                    local player = game:GetService('Players').LocalPlayer
-                    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid and humanoid.Health > 35 then
-                        local b1 = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory.items
-                        local hasLightVest = false
-                        
-                        for i, v in next, b1 do
-                            if v.name == "Light Vest" then
-                                hasLightVest = true
-                                local light = v.guid
-                                local armor = player:GetAttribute('armor')
-                                if armor == nil or armor <= 0 then
-                                    require(game:GetService("ReplicatedStorage").devv).load("Signal").FireServer("equip", light)
-                                    require(game:GetService("ReplicatedStorage").devv).load("Signal").FireServer("useConsumable", light)
-                                    require(game:GetService("ReplicatedStorage").devv).load("Signal").FireServer("removeItem", light)
-                                end
-                                break
-                            end
-                        end
-                        
-                        if not hasLightVest then
-                            require(game:GetService("ReplicatedStorage").devv).load("Signal").InvokeServer("attemptPurchase", "Light Vest")
-                        end
-                    end
-                end)
-            end)
+    
+    local function flyBack(bp, bg, lockConnection)
+        if not tempCFrame then return false end
+        local root = getRoot()
+        local humanoid = getHumanoid()
+        if not root or not humanoid then return false end
+        
+        if lockConnection then lockConnection:Disconnect() end
+        if bp then bp:Destroy() end
+        if bg then bg:Destroy() end
+        
+        for _, child in ipairs(root:GetChildren()) do
+            if child:IsA("BodyPosition") or child:IsA("BodyGyro") or child:IsA("BodyVelocity") then
+                child:Destroy()
+            end
         end
+        
+        local startPos = root.Position
+        local targetPos = tempCFrame.Position
+        local duration = 0.5
+        local startTime = tick()
+        
+        humanoid.PlatformStand = false
+        
+        while tick() - startTime < duration do
+            local elapsed = tick() - startTime
+            local progress = math.min(elapsed / duration, 1)
+            local eased = 1 - (1 - progress) * (1 - progress)
+            local currentPos = startPos + (targetPos - startPos) * eased
+            root.CFrame = CFrame.new(currentPos)
+            task.wait(0.005)
+        end
+        
+        root.CFrame = tempCFrame
+        root.Velocity = Vector3.new(0, 0, 0)
+        root.RotVelocity = Vector3.new(0, 0, 0)
+        humanoid.PlatformStand = false
+        disableNoclip()
+        removePlatform()
+        tempCFrame = nil
+        return true
     end
-})
-Tabs.ProTab:Toggle({
-    Title = "自动购买面具",
-    Value = false,
-    Callback = function(state) 
-        autokz = state
-        if autokz then
-            while autokz and task.wait(1) do
-                local player = game:GetService("Players").LocalPlayer
-                local character = player.Character or player.CharacterAdded:Wait()
-                local Mask = character:FindFirstChild("Hockey Mask")
-                local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
-                local b1 = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory.items
-                if not Mask then
-                    Signal.InvokeServer("attemptPurchase", "Hockey Mask")
-                    for i, v in next, b1 do
-                        if v.name == "Hockey Mask" then
-                            local sugid = v.guid
-                            if not Mask then
-                                Signal.FireServer("equip", sugid)
-                                Signal.FireServer("wearMask", sugid)
+    
+    local function flyAndBuy(shopPos, buyFunc)
+        if isTeleporting then return end
+        isTeleporting = true
+        pcall(function()
+            if recordCurrentPosition() then
+                local bp, bg, lockConn = flyTo(shopPos, 0.5)
+                task.wait(0.2)
+                
+                -- ====== 执行2次购买 ======
+                print("[购买] 执行第 1 次购买请求...")
+                buyFunc()
+                task.wait(0.15)
+                
+                print("[购买] 执行第 2 次购买请求...")
+                buyFunc()
+                
+                -- 等待1秒让服务器处理
+                task.wait(1.0)
+                
+                flyBack(bp, bg, lockConn)
+            end
+        end)
+        isTeleporting = false
+    end
+    
+    LocalPlayer.CharacterAdded:Connect(function(char)
+        task.spawn(function()
+            char:WaitForChild("HumanoidRootPart", 5)
+            task.wait(0.5)
+            recordCurrentPosition()
+        end)
+    end)
+    
+    task.spawn(function()
+        task.wait(1)
+        recordCurrentPosition()
+    end)
+    
+    return { flyAndBuy = flyAndBuy, SHOP_POINTS = SHOP_POINTS }
+end
+
+local function setupAutoArmor(teleport)
+    task.spawn(function()
+        local Tabs = _G.Tabs or Tabs
+        if not Tabs then
+            task.wait(2)
+            Tabs = _G.Tabs or Tabs
+        end
+        if not Tabs then return end
+        
+        local LocalPlayer = game:GetService("Players").LocalPlayer
+        local RunService = game:GetService("RunService")
+        
+        Tabs.ProTab:Toggle({
+            Title = "自动买护甲",
+            Default = false,
+            Callback = function(Value)
+                AutoArmor = Value
+                if Value then
+                    local connection
+                    connection = RunService.Heartbeat:Connect(function()
+                        if not AutoArmor then
+                            connection:Disconnect()
+                            return
+                        end
+                        pcall(function()
+                            local player = LocalPlayer
+                            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                            if humanoid and humanoid.Health > 35 then
+                                local armor = player:GetAttribute('armor') or 0
+                                if armor <= 0 then
+                                    local function buyArmor()
+                                        local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
+                                        local b1 = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory.items
+                                        local hasLightVest = false
+                                        for i, v in next, b1 do
+                                            if v.name == "Light Vest" then
+                                                hasLightVest = true
+                                                local light = v.guid
+                                                Signal.FireServer("equip", light)
+                                                Signal.FireServer("useConsumable", light)
+                                                Signal.FireServer("removeItem", light)
+                                                break
+                                            end
+                                        end
+                                        if not hasLightVest then
+                                            Signal.InvokeServer("attemptPurchase", "Light Vest")
+                                        end
+                                    end
+                                    teleport.flyAndBuy(teleport.SHOP_POINTS.Armor, buyArmor)
+                                end
                             end
-                            break
+                        end)
+                    end)
+                end
+            end
+        })
+    end)
+end
+
+local function setupAutoHeal(teleport)
+    task.spawn(function()
+        local Tabs = _G.Tabs or Tabs
+        if not Tabs then
+            task.wait(2)
+            Tabs = _G.Tabs or Tabs
+        end
+        if not Tabs then return end
+        
+        local LocalPlayer = game:GetService("Players").LocalPlayer
+        local RunService = game:GetService("RunService")
+        
+        Tabs.ProTab:Toggle({
+            Title = "自动回血",
+            Default = false,
+            Callback = function(Value)
+                if healThread then
+                    healThread:Disconnect()
+                    healThread = nil
+                end
+                if Value then
+                    healThread = RunService.Heartbeat:Connect(function()
+                        pcall(function()
+                            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                            local Humanoid = char:FindFirstChildOfClass("Humanoid")
+                            if not Humanoid then return end
+                            if Humanoid.Health >= 5 and Humanoid.Health < Humanoid.MaxHealth * 0.85 then
+                                local function buyBandage()
+                                    local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
+                                    Signal.InvokeServer("attemptPurchase", 'Bandage')
+                                    local inv = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory
+                                    for _, v in next, inv.items do
+                                        if v.name == 'Bandage' then
+                                            local bande = v.guid
+                                            Signal.FireServer("equip", bande)
+                                            Signal.FireServer("useConsumable", bande)
+                                            Signal.FireServer("removeItem", bande)
+                                            break
+                                        end
+                                    end
+                                end
+                                teleport.flyAndBuy(teleport.SHOP_POINTS.Bandage, buyBandage)
+                            end
+                        end)
+                    end)
+                end
+            end
+        })
+    end)
+end
+
+local function setupAutoHockeyMask()
+    task.spawn(function()
+        local Tabs = _G.Tabs or Tabs
+        if not Tabs then
+            task.wait(2)
+            Tabs = _G.Tabs or Tabs
+        end
+        if not Tabs then return end
+        
+        local LocalPlayer = game:GetService("Players").LocalPlayer
+        
+        Tabs.ProTab:Toggle({
+            Title = "自动购买面具",
+            Value = false,
+            Callback = function(state) 
+                autokz = state
+                if autokz then
+                    while autokz and task.wait(1) do
+                        local player = LocalPlayer
+                        local character = player.Character or player.CharacterAdded:Wait()
+                        local Mask = character:FindFirstChild("Hockey Mask")
+                        local Signal = require(game:GetService("ReplicatedStorage").devv).load("Signal")
+                        local b1 = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory.items
+                        if not Mask then
+                            Signal.InvokeServer("attemptPurchase", "Hockey Mask")
+                            for i, v in next, b1 do
+                                if v.name == "Hockey Mask" then
+                                    local sugid = v.guid
+                                    if not Mask then
+                                        Signal.FireServer("equip", sugid)
+                                        Signal.FireServer("wearMask", sugid)
+                                    end
+                                    break
+                                end
+                            end
                         end
                     end
                 end
             end
-        end
-    end
-})
+        })
+    end)
+end
 
-Tabs.ProTab:Toggle({
-    Title = "自动回血",
-    Default = false,
-    Callback = function(Value)
-        if healThread then
-            healThread:Disconnect()
-            healThread = nil
-        end
 
-        if Value then
-            local heartbeat = game:GetService("RunService").Heartbeat
-            healThread = heartbeat:Connect(function()
-                Signal.InvokeServer("attemptPurchase", 'Bandage')
-                local inv = require(game:GetService('ReplicatedStorage').devv).load('v3item').inventory
-                for _, v in next, inv.items do
-                    if v.name == 'Bandage' then
-                        local bande = v.guid
-                        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                        local Humanoid = Character:WaitForChild('Humanoid')
-                        if Humanoid.Health >= 5 and Humanoid.Health < Humanoid.MaxHealth then
-                            Signal.FireServer("equip", bande)
-                            Signal.FireServer("useConsumable", bande)
-                            Signal.FireServer("removeItem", bande)
-                        end
-                        break
-                    end
-                end
-            end)
-        end
-    end
-})
-
+task.spawn(function()
+    _G.Tabs = Tabs
+    
+    local teleport = setupTeleportSystem()
+    task.wait(0.3)
+    
+    setupAutoHockeyMask()
+    task.wait(0.2)
+    
+    setupAutoArmor(teleport)
+    task.wait(0.2)
+    
+    setupAutoHeal(teleport)
+end)
 
 Tabs.PlayerTab:Toggle({
     Title = "移速修改",
