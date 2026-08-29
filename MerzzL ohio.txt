@@ -1,3 +1,5 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/QQ161475237/IDK/main/ohioFPS.txt"))()
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local devv = require(ReplicatedStorage:WaitForChild("devv"))
 local Signal = devv.load("Signal")
@@ -25,7 +27,7 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:EditOpenButton({
-    Title = "<font color='#FFFFFF'>Y</font><font color='#7FFFFF'>t</font><font color='#33FFFF'>t</font><font color='#00FFFF'>r</font><font color='#0099FF'>i</font><font color='#0033FF'>u</font><font color='#0000FF'>m</font>", --最小化按钮文字显示
+    Title = "<font color='#FFFFFF'>M</font><font color='#7FFFFF'>e</font><font color='#33FFFF'>r</font><font color='#00FFFF'>z</font><font color='#0099FF'>z</font><font color='#0033FF'>L</font>", --最小化按钮文字显示
     Icon = "https://raw.githubusercontent.com/122525a/Xiang/refs/heads/main/Image_1772856235446_755.jpg", --最小化按钮图标
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2.35,
