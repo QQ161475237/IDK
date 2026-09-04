@@ -1,0 +1,410 @@
+local Translations = {
+    -- ========== 标签页 ==========
+    ["Info"] = "信息",
+    ["ESP"] = "ESP",
+    ["Main"] = "主要",
+    ["Aim"] = "瞄准",
+    ["Abilities"] = "能力",
+    ["Hitbox"] = "碰撞箱",
+    ["Anti"] = "防反",
+    ["Misc"] = "杂项",
+    ["UI Settings"] = "UI 设置",
+
+    -- ========== 通用/信息页 ==========
+    ["Player"] = "玩家",
+    ["Username"] = "用户名",
+    ["User ID"] = "用户ID",
+    ["Display Name"] = "显示名称",
+    ["Account Age"] = "账号年龄",
+    ["days"] = "天",
+    ["Script Info"] = "脚本信息",
+    ["Copy Discord Server"] = "复制Discord服务器",
+
+    -- ========== ESP ==========
+    ["Master Toggle"] = "总开关",
+    ["Highlight"] = "高亮",
+    ["Name"] = "名称",
+    ["Health"] = "血量",
+    ["Box"] = "方框",
+    ["Chams Master Toggle"] = "透视总开关",
+    ["Survivor Chams"] = "幸存者透视",
+    ["Killer Chams"] = "杀手透视",
+    ["Killer Color"] = "杀手颜色",
+    ["Survivor Color"] = "幸存者颜色",
+    ["Breathing Effect"] = "呼吸效果",
+    ["Visibility Check"] = "可见性检测",
+    ["Fill Transparency"] = "填充透明度",
+    ["Show Names (Username)"] = "显示名称 (用户名)",
+    ["Show Username Toggle"] = "显示用户名开关",
+    ["Show Killer Names"] = "显示杀手名称",
+    ["Show Survivor Names"] = "显示幸存者名称",
+    ["Show Skin (Next to Name)"] = "显示皮肤 (名字旁)",
+    ["Show Distance"] = "显示距离",
+    ["Show Health Bar"] = "显示血量条",
+    ["Show Health Text"] = "显示血量文本",
+    ["Width"] = "宽度",
+    ["Full Box"] = "完整方框",
+    ["Filled Box"] = "填充方框",
+    ["Corner Box"] = "角框",
+    ["Animate"] = "动画",
+    ["Gradient"] = "渐变",
+    ["Gradient Fill"] = "渐变填充",
+    ["Rotation Speed"] = "旋转速度",
+    ["World view ESP"] = "世界视角透视",
+    ["Items"] = "物品",
+    ["Special"] = "特殊",
+    ["Abilities"] = "能力",
+    ["Generator ESP"] = "发电机透视",
+    ["Item ESP"] = "物品透视",
+    ["Pizza ESP"] = "披萨透视",
+    ["Tripwire ESP"] = "绊线透视",
+    ["Trip Mine ESP"] = "地雷透视",
+    ["Respawn Point ESP"] = "重生点透视",
+    ["Graffiti ESP"] = "涂鸦透视",
+    ["Task Folders ESP"] = "任务文件夹透视",
+    ["Pizza Delivery ESP"] = "披萨外卖透视",
+    ["Zombie ESP"] = "僵尸透视",
+    ["Ability ESP"] = "能力透视",
+    ["Outline Only"] = "仅轮廓",
+    ["Show Nametag"] = "显示名牌",
+    ["Ability Color"] = "能力颜色",
+    ["Mine Spawn Alert"] = "地雷生成警报",
+    ["Entity Spawn Alert"] = "实体生成警报",
+    ["Fade on Distance"] = "距离渐隐",
+    ["Fade on Death"] = "死亡渐隐",
+    ["Fade on Leave"] = "离开渐隐",
+    ["Max Distance"] = "最大距离",
+
+    -- ========== 主要功能 ==========
+    ["Quick"] = "快速",
+    ["Acting"] = "演技",
+    ["Connect"] = "连接",
+    ["Teleport"] = "传送",
+    ["Environment"] = "环境",
+    ["FOV"] = "视野",
+    ["Visual"] = "视觉",
+    ["Weather"] = "天气",
+    ["Quick Repair"] = "快速修复",
+    ["Brightness Value"] = "亮度值",
+    ["Repair Speed"] = "修复速度",
+    ["No Shadows"] = "无阴影",
+    ["Remove Fog"] = "去除雾效",
+    ["Enable"] = "启用",
+    ["Stamina"] = "体力",
+    ["Settings"] = "设置",
+    ["Infinite Stamina"] = "无限体力",
+    ["Max Stamina Mod"] = "最大体力修改",
+    ["Stamina Recovery Mod"] = "体力恢复修改",
+    ["Stamina Drain Mod"] = "体力消耗修改",
+    ["Sprint Speed Mod"] = "冲刺速度修改",
+    ["Acting Repair"] = "演技修复",
+    ["Repair Interval"] = "修复间隔",
+    ["For actors only"] = "仅限演员",
+    ["Max Stamina Value"] = "最大体力值",
+    ["Sprint Speed"] = "冲刺速度",
+    ["Stamina Recovery Speed"] = "体力恢复速度",
+    ["Stamina Drain Speed"] = "体力消耗速度",
+    ["Auto Connect"] = "自动连接",
+    ["Connection Speed"] = "连接速度",
+    ["Auto Connect - Complete minigames"] = "自动连接 - 完成小游戏",
+    ["Teleport to Unfinished Generator"] = "传送到未完成发电机",
+    ["Enable FOV"] = "启用视野修改",
+    ["Force Field Material"] = "力场材质",
+    ["Transparency"] = "透明度",
+    ["Trail"] = "轨迹",
+    ["Trail Color"] = "轨迹颜色",
+    ["Trail Duration"] = "轨迹持续时间",
+    ["Weather Type"] = "天气类型",
+    ["None"] = "无",
+    ["Search"] = "搜索",
+
+    -- ========== 瞄准 ==========
+    ["Chance Aim"] = "概率瞄准",
+    ["Show Menu"] = "显示菜单",
+    ["Visualize Projectile"] = "可视化投射物",
+    ["Noli VoidRush"] = "Noli 虚空冲刺",
+    ["Void Rush Aim"] = "虚空冲刺瞄准",
+    ["Enable before round starts"] = "回合开始前启用",
+    ["Wall Detection"] = "墙壁检测",
+    ["Visualization"] = "可视化",
+    ["Aim Distance"] = "瞄准距离",
+    ["Screen center priority lock"] = "屏幕中心优先锁定",
+    ["Auto Skateboard Jump"] = "自动滑板跳跃",
+    ["Device Type"] = "设备类型",
+    ["PC"] = "电脑",
+    ["Skateboard Movement Control"] = "滑板移动控制",
+    ["Auto Parry"] = "自动格挡",
+    ["Wall Check"] = "墙壁检查",
+    ["Character"] = "角色",
+    ["Slasher"] = "杀手",
+    ["Detection Range"] = "检测范围",
+    ["Max Verification Time"] = "最大验证时间",
+    ["Facing"] = "朝向",
+    ["Front Angle (Normal Mode)"] = "前方角度 (普通模式)",
+    ["Back Angle (TwoTime Mode)"] = "后方角度 (双时模式)",
+    ["Show Facing Guide Lines"] = "显示朝向辅助线",
+    ["Guide Line Length"] = "辅助线长度",
+    ["Normal Mode Facing Color"] = "普通模式朝向颜色",
+    ["TwoTime Back Color"] = "双时模式背后颜色",
+    ["General Expansion"] = "常规扩展",
+    ["Hitbox Expansion"] = "碰撞箱追踪",
+    ["Expansion Value"] = "追踪数值",
+
+    -- ========== 防反 (Anti) ==========
+    ["Anti Effects"] = "防效果",
+    ["Guest 1337"] = "铭感肌 1337",
+    ["Noob"] = "Noob",
+    ["Anti Slateskin Speed"] = "防石板皮肤速度",
+    ["Anti Charge Ended Buffer"] = "防冲锋结束缓冲",
+    ["John Doe"] = "John Doe",
+    ["Infinite Crystal Time"] = "无限水晶时间",
+    ["Instant Crystal Charge"] = "瞬间水晶充能",
+    ["General"] = "常规",
+    ["Always Show Chat"] = "总是显示聊天",
+    ["Anti Acid"] = "防酸液",
+    ["Anti Slow"] = "防减速",
+    ["Anti Stun"] = "防眩晕",
+    ["Remove Effects"] = "移除效果",
+    ["Anti Hidden Stats"] = "防隐藏属性",
+    ["Vampire"] = "吸血鬼",
+    ["Auto QTE"] = "自动QTE",
+    ["Anti John Doe Trap"] = "防 John Doe 陷阱",
+    ["Anti John Doe Trail"] = "防 John Doe 轨迹",
+    ["Void Rush Ignore Obstacles"] = "虚空冲刺无视障碍",
+    ["C001kidd"] = "C001kidd",
+    ["Free Movement (Locked View)"] = "自由移动 (锁定视角)",
+    ["Ignore Collision Objects"] = "忽略碰撞物体",
+    ["jane doe"] = "简多",
+
+    -- ========== 碰撞箱 ==========
+    ["Config"] = "配置",
+    ["Hitbox"] = "碰撞箱",
+    ["Auto Block"] = "自动格挡",
+    ["Hitbox Distance"] = "碰撞箱距离",
+    ["Block Delay"] = "格挡延迟",
+    ["AB Hitbox Multiplier"] = "格挡碰撞箱倍数",
+    ["Show AB Hitbox"] = "显示格挡碰撞箱",
+    ["AB Hitbox Transparency"] = "格挡碰撞箱透明度",
+    ["Hitbox Preview"] = "碰撞箱预览",
+    ["Auto Punch"] = "自动拳击",
+    ["Punch Aim"] = "拳击瞄准",
+    ["Range"] = "范围",
+    ["Auto Block Delay"] = "自动格挡延迟",
+    ["Part Lifetime"] = "部件存在时间",
+    ["Spawn Duration"] = "生成持续时间",
+    ["Aim Mode"] = "瞄准模式",
+    ["Character Only"] = "仅限角色",
+    ["Smooth Speed"] = "平滑速度",
+
+    -- ========== 预判/背刺 ==========
+    ["Prediction"] = "预判",
+    ["Adjust"] = "调整",
+    ["Glide"] = "滑翔",
+    ["Auto Backstab"] = "自动背刺",
+    ["Behind Check"] = "背后检测",
+    ["Aiming"] = "瞄准",
+    ["Auto Dagger"] = "自动匕首",
+    ["Behind"] = "背后",
+    ["Backstab Mode"] = "背刺模式",
+    ["lerp"] = "插值",
+    ["Backstab V2"] = "背刺 V2",
+    ["Aim Dagger"] = "瞄准匕首",
+    ["Visualization Range"] = "可视化范围",
+    ["Backstab Range"] = "背刺范围",
+    ["LookVector"] = "视角方向",
+    ["Prediction Strength"] = "预判强度",
+    ["Prediction Time (s)"] = "预判时间 (秒)",
+    ["Range (N)"] = "范围 (N)",
+    ["Behind Distance"] = "背后距离",
+    ["Lerp Speed"] = "插值速度",
+    ["Pre-Dagger Delay"] = "匕首前摇延迟",
+    ["Glide Backstab"] = "滑翔背刺",
+    ["Aim at Killer Side"] = "瞄准杀手侧方",
+    ["Mode"] = "模式",
+    ["Legit"] = "稳定",
+    ["Aiming Mode"] = "瞄准模式",
+
+    -- ========== 伪装/观战 ==========
+    ["Disguise"] = "伪装",
+    ["Spectate"] = "观战",
+    ["Player"] = "玩家",
+    ["Apply"] = "应用",
+    ["desync"] = "取消同步",
+    ["Desync"] = "取消同步",
+    ["Spectating: Not spectating"] = "观战中: 未观战",
+    ["New Spectate Name"] = "新观战名称",
+    ["Enter username..."] = "输入用户名...",
+    ["Refresh Current Spectate"] = "刷新当前观战",
+    ["Console Output"] = "控制台输出",
+    ["Modify Spectate"] = "修改观战",
+
+    -- ========== 数值/单位 ==========
+    ["1.25s/5s"] = "1.25秒/5秒",
+    ["0.12 s/0.2 s"] = "0.12秒/0.2秒",
+    ["5.5 s/10 s"] = "5.5秒/10秒",
+    ["0.02 s/0.2 s"] = "0.02秒/0.2秒",
+    ["10s/30s"] = "10秒/30秒",
+    ["20 s/50 s"] = "20秒/50秒",
+    ["35/100"] = "35/100",
+    ["51/100"] = "51/100",
+    ["300/600"] = "300/600",
+    ["113"] = "113",
+    ["120/120"] = "120/120",
+    ["1.45/3"] = "1.45/3",
+    ["0.6/1"] = "0.6/1",
+    ["0.1/0.8"] = "0.1/0.8",
+    ["0.1/0.5"] = "0.1/0.5",
+    ["0.3/1"] = "0.3/1",
+    ["0.1/1"] = "0.1/1",
+    ["1.5/5"] = "1.5/5",
+    ["20/20"] = "20/20",
+    ["15/50"] = "15/50",
+    ["8"] = "8",
+    ["1.7"] = "1.7",
+    ["0.37"] = "0.37",
+    ["0.08"] = "0.08",
+    ["0.15"] = "0.15",
+    ["0.12"] = "0.12",
+    ["27/120"] = "27/120",
+    ["10/100"] = "10/100",
+
+    -- ========== 杂项 ==========
+    ["Default speed recommended"] = "推荐默认速度",
+    ["Default speed recommended."] = "推荐使用默认速度。",
+    ["Enable before round starts."] = "请在回合开始前启用。",
+    ["Complete Dalgona Shape"] = "一键完成扣糖饼",
+    ["Auto Flying Stone"] = "自动第二关飞石",
+    ["Auto Gonggi (spam this every time)"] = "自动抓石子（需要频繁重复触发）",
+    ["Auto Jegi"] = "自动踢毽子",
+    ["Auto Win [BETA]"] = "自动赢[测试中]",
+    ["Free Quicksilver"] = "免费客户端快银",
+    ["Peaberts ESP"] = "透视狗哥",
+    ["Unlock"] = "解锁",
+    ["Pentathlon"] = "五人六足",
+    ["RAGE"] = "暴力",
+    ["Stop On Red Light"] = "红灯时自动停",
+    ["Auto Escape"] = "自动逃生",
+    ["Teleport To Spawn"] = "传送至出生点",
+    ["Teleport To Spikes"] = "传送至尖刺区域",
+    ["Teleport Random Exit"] = "传送至随机逃生门",
+    ["Mingle"] = "？",
+    ["Freeze Rope"] = "固定绳索",
+    ["Remove Balance Mini Game"] = "移除平衡机制",
+    ["Glass Bridge"] = "玻璃桥",
+    ["Perm Guard"] = "永久守卫",
+    ["Faster Sprint"] = "速度加成",
+    ["2x vote"] = "双倍投票",
+    ["Old"] = "旧",
+    ["New"] = "新",
+    ["ESP Mode"] = "ESP功能",
+    ["Free Quicksliver"] = "免费快银(客户端)",
+    ["Jump Power"] = "跳跃高度",
+    ["Gravity"] = "重力",
+    ["Wins"] = "胜场",
+    ["Level"] = "等级",
+    ["Tag"] = "代码",
+    ["Tag Number"] = "代码数字",
+    ["Enable Won Boost(Level 5)"] = "开启金币加成",
+    ["Enable Strength Boost(Level 5)"] = "开启力量加成",
+    ["Free gamepass"] = "客户端免费游戏通行证",
+    ["Auto Skip Dialogues"] = "自动跳过对话",
+    ["Auto Collect Flashbang"] = "自动收集闪光弹",
+    ["Auto Collect Grenade"] = "自动捡手雷",
+    ["Unlock Fasster Sprint 6"] = "解锁速度6",
+    ["discord.gg/PufsSPGK2x | Ink Game (by @t3e6)"] = "Q群596301441 | 脚本作者: @t3e6",
+    ["Q群596301441 | 脚本作者: @t3e6"] = "Q群596301441 | 脚本作者: @t3e6",
+}
+
+-- ========== 核心函数 ==========
+local function translateText(text)
+    if not text or type(text) ~= "string" then return text end
+    if Translations[text] then return Translations[text] end
+    for en, cn in pairs(Translations) do
+        if text:find(en) then return text:gsub(en, cn) end
+    end
+    return text
+end
+
+local function translateAllElements()
+    local function translateGui(gui)
+        for _, element in ipairs(gui:GetDescendants()) do
+            if element:IsA("TextLabel") or element:IsA("TextButton") or element:IsA("TextBox") then
+                local currentText = element.Text
+                if currentText and currentText ~= "" then
+                    local translatedText = translateText(currentText)
+                    if translatedText ~= currentText then
+                        element.Text = translatedText
+                    end
+                end
+            end
+        end
+    end
+    pcall(translateGui, game:GetService("CoreGui"))
+    local player = game:GetService("Players").LocalPlayer
+    if player and player:FindFirstChild("PlayerGui") then
+        pcall(translateGui, player.PlayerGui)
+    end
+end
+
+local function setupListener()
+    local function connectToGui(gui)
+        gui.DescendantAdded:Connect(function(descendant)
+            if descendant:IsA("TextLabel") or descendant:IsA("TextButton") or descendant:IsA("TextBox") then
+                local currentText = descendant.Text
+                if currentText and currentText ~= "" then
+                    local translatedText = translateText(currentText)
+                    if translatedText ~= currentText then
+                        descendant.Text = translatedText
+                    end
+                end
+                descendant:GetPropertyChangedSignal("Text"):Connect(function()
+                    local newText = descendant.Text
+                    if newText and newText ~= "" then
+                        local translatedText = translateText(newText)
+                        if translatedText ~= newText then
+                            descendant.Text = translatedText
+                        end
+                    end
+                end)
+            end
+        end)
+    end
+    pcall(connectToGui, game:GetService("CoreGui"))
+    local player = game:GetService("Players").LocalPlayer
+    if player and player:FindFirstChild("PlayerGui") then
+        pcall(connectToGui, player.PlayerGui)
+    end
+end
+
+local function startTranslation()
+    translateAllElements()
+    setupListener()
+end
+
+local function loadScript()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Potato5466794/Nolsaken/refs/heads/main/EN/Nolsaken.lua"))()
+    end)
+    if not success then
+        warn("脚本加载失败:", err)
+    end
+end
+
+task.spawn(function()
+    task.wait(0.5)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "MerzzL汉化",
+            Text = "请支持付费NOL",
+            Duration = 3
+        })
+    end)
+end)
+
+if RunScriptFirst then
+    loadScript()
+    startTranslation()
+else
+    startTranslation()
+    loadScript()
+end
