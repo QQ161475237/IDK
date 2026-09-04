@@ -119,7 +119,8 @@ local Translations = {
     ["Search"] = "搜索",
 
     -- ========== 瞄准 ==========
-    ["Chance Aim"] = "概率瞄准",
+    ["Chance Aim"] = "Chance自瞄",
+    ["Aim"] = "自瞄",
     ["Show Menu"] = "显示菜单",
     ["Visualize Projectile"] = "可视化投射物",
     ["Noli VoidRush"] = "Noli 虚空冲刺",
